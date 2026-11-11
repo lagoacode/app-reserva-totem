@@ -17,9 +17,18 @@ window.KIOSK_CONFIG = {
   // Segundos na tela final antes de reiniciar
   telaFinalSegundos: 20,
   // true = usa dados de exemplo (js/api.js). false = chama a API real.
+  // Default demo; cada totem liga o modo real em js/config.local.js (não versionado).
   modoDemonstracao: true,
-  // Endereço da API de reservas quando modoDemonstracao = false
+  // Endereço da API de reservas quando modoDemonstracao = false (endpoints ainda não ligados: pulseira, pagamento...)
   apiBase: "https://SEU-SERVIDOR/api/checkin",
+
+  // Parâmetros gerais da integração eSolution (valem quando modoDemonstracao = false)
+  integracao: {
+    timeoutMs: 15000,
+    // Query param da rota /v1/reservas/reserva. O valor é o NÚMERO da reserva que o hóspede
+    // digita no totem. A rota só retorna reservas confirmadas (Status "CF").
+    campoBuscaReserva: "Id"
+  },
 
   empreendimentos: {
     ecotowers: {
@@ -27,7 +36,12 @@ window.KIOSK_CONFIG = {
       local: "Caldas Novas · Goiás",
       foto: "assets/img/lobby-ecotowers.jpg",
       horarioEntrada: "14h",
-      horarioSaida: "11h"
+      horarioSaida: "11h",
+      // Integração eSolution. base = servidor:porta. O token (Credencial Fixa) NÃO fica aqui:
+      // é definido em js/config.local.js (não versionado). Veja js/config.local.example.js.
+      webSales: { base: "http://192.168.6.19:1625", token: "" },
+      // PDV (não-virtual) para as rotas de conta/cartão no check-out. Preencher quando definido.
+      pdvId: null
     },
     // Preencher quando os outros empreendimentos forem configurados
     empreendimento2: {

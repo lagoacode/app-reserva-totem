@@ -45,6 +45,37 @@
 
   function espera(ms, valor) { return new Promise(function (r) { setTimeout(function () { r(valor); }, ms); }); }
 
+  /* ---------- mapeamento eSolution → formato das telas ----------
+   * Retorno real de GET /v1/reservas/reserva?Id=<numero> (módulo WebCheckin):
+   * { Id, Status, TipoUh (nome), UH, CheckInPrevisao, CheckOutPrevisao, NomeHospedePrincipal,
+   *   ListaHospede: [{ Principal: "S"|"N", FaixaEtaria: "AD"|"C1"|"C2", Pessoa: { Nome } }] }
+   * A rota só retorna reservas confirmadas ("CF"); "A Confirmar" responde como não encontrada. */
+  function soData(dt) { return dt ? String(dt).slice(0, 10) : ""; }   // "2026-12-20T00:00:00" → "2026-12-20"
+  function mapearReserva(r) {
+    if (!r) return null;
+    var lista = Array.isArray(r.ListaHospede) ? r.ListaHospede : [];
+    var hospedes = lista.map(function (h) {
+      var faixa = (h.FaixaEtaria || "").toUpperCase();   // AD = adulto; C1/C2 = criança
+      return {
+        nome: (h.Pessoa && h.Pessoa.Nome) || "",
+        titular: h.Principal === "S",
+        crianca: faixa.charAt(0) === "C"
+      };
+    });
+    if (!hospedes.length && r.NomeHospedePrincipal) hospedes = [{ nome: r.NomeHospedePrincipal, titular: true }];
+    var criancas = hospedes.filter(function (h) { return h.crianca; }).length;
+    return {
+      numero: String(r.Id),
+      entrada: soData(r.CheckInPrevisao),
+      saida: soData(r.CheckOutPrevisao),
+      acomodacao: r.TipoUh || "",
+      apartamento: r.UH || "",
+      adultos: hospedes.length - criancas,
+      criancas: criancas,
+      hospedes: hospedes
+    };
+  }
+
   function chamar(rota, corpo) {
     return fetch(cfg.apiBase + rota, {
       method: "POST",
@@ -60,7 +91,14 @@
   window.KioskAPI = {
     /* Busca pela numeração do voucher (6 dígitos) */
     buscarPorReserva: function (numero, hotel) {
-      if (!cfg.modoDemonstracao) return chamar("/reserva", { numero: numero, hotel: hotel });
+      if (!cfg.modoDemonstracao) {
+        var campo = (cfg.integracao && cfg.integracao.campoBuscaReserva) || "Id";
+        var query = {}; query[campo] = numero;
+        return window.KioskHTTP.get(hotel, "/v1/reservas/reserva", query).then(function (data) {
+          var r = Array.isArray(data) ? data[0] : data;   // Data vem como array
+          return mapearReserva(r);                         // null = não encontrada
+        });
+      }
       // na demonstração, "123456" simula reserva não encontrada
       if (numero === "123456") return espera(1500, null);
       return espera(1500, Object.assign({}, EXEMPLO, { numero: numero }));

@@ -1,0 +1,13 @@
+# Credenciais por totem (token da API eSolution) — NÃO versionar
+js/config.local.js
+
+# Tooling do Claude Code
+.claudeignore
+.claude/
+
+# Lixo de SO / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
