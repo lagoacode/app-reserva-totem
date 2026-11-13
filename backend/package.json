@@ -1,0 +1,14 @@
+{
+  "name": "app-reserva-totem-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BFF do totem: serve o front, esconde o token eSolution e expõe as rotas de reserva.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

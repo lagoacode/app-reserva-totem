@@ -1,5 +1,8 @@
-# Credenciais por totem (token da API eSolution) — NÃO versionar
-js/config.local.js
+# Segredos do backend (token eSolution e, depois, credencial do banco) — NÃO versionar
+backend/config.js
+
+# Dependências do backend
+backend/node_modules/
 
 # Tooling do Claude Code
 .claudeignore
